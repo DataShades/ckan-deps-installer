@@ -27,7 +27,7 @@ help:
 
 install: $(ext_list:%=install-%)
 install-%: ckanext-%
-	@cd $?; \
+	cd $(root_dir)/ckanext-$(ext); \
 	pip install -e.; \
 	for f in requirements.txt pip-requirements.txt; do \
 		echo $$f; \
@@ -35,18 +35,18 @@ install-%: ckanext-%
 	done;
 
 
-ckanext-% check-% sync-%: type = $(word 2, $(remote-$(ext)))
-ckanext-% check-% sync-%: remote = $(firstword $(remote-$(ext)))
-ckanext-% check-% sync-%: target = $(lastword $(remote-$(ext)))
+ckanext-% check-% sync-% install-%: type = $(word 2, $(remote-$(ext)))
+ckanext-% check-% sync-% install-%: remote = $(firstword $(remote-$(ext)))
+ckanext-% check-% sync-% install-%: target = $(lastword $(remote-$(ext)))
 
 
 ckanext: $(ext_list:%=ckanext-%)
 ckanext-%: ext = $(@:ckanext-%=%)
 ckanext-%:
-	@echo [Clone $@ into $(root_dir)/$@]
-	@cd $(root_dir); \
+	@echo [Clone $(ext) into $(root_dir)/ckanext-$(ext)]
+	cd $(root_dir); \
 	git clone $(remote);
-	@cd $(root_dir)/$@; \
+	cd $(root_dir)/ckanext-$(ext); \
 	if [[ "$(type)" == "branch" ]]; then \
 		git checkout -B $(target) origin/$(target); \
 	fi
@@ -55,11 +55,12 @@ sync: $(patsubst %,sync-%,$(ext_list))
 sync-%: ext = $(@:sync-%=%)
 sync-%: ckanext-%
 	@echo Synchronize $(ext)
-	@cd $?; \
+
+	cd $(root_dir)/ckanext-$(ext); \
 	git remote set-url origin $(remote); \
 	git fetch origin;
-	@if [[ "$(type)" == "branch" ]]; then \
-		cd $?; \
+	if [[ "$(type)" == "branch" ]]; then \
+		cd $(root_dir)/ckanext-$(ext); \
 		git checkout -B $(target) origin/$(target); \
 		git reset --hard origin/$(target); \
 	fi;
@@ -71,42 +72,41 @@ check: ckan-check $(ext_list:%=check-%)
 check-%: ext=$(@:check-%=%)
 check-%: ext_path=$(root_dir)/ckanext-$(ext)
 check-%:
-	@if [[ ! -d "$(ext_path)" ]]; then \
+	if [[ ! -d "$(ext_path)" ]]; then \
 		echo $(ext_path) does not exist; \
-		exit 0; \
+		exit 1; \
 	fi;
-	@cd "$(ext_path)"; \
+	cd "$(ext_path)"; \
 	remote_url=$$(git remote get-url origin); \
 	if [[ "$$remote_url" != "$(remote)" ]]; then \
 		echo $(ext) remote is different from $(remote): $$remote_url; \
-		exit 0; \
+		exit 1; \
 	fi;
-	@if [[ "$(type)" == "branch" ]]; then \
+	if [[ "$(type)" == "branch" ]]; then \
 	    cd "$(ext_path)"; \
 	    branch=$$(git branch --show-current); \
 	    if [[ "$$branch" != "$(target)" ]]; then \
 		    echo $(ext) branch is different from $(target): $$branch; \
-		    exit 0; \
+		    exit 1; \
 	    fi; \
 	    git fetch origin; \
 	    if [[ "$$(git log ..origin/$$branch)" != "" ]]; then \
 		    echo $(ext) remote has extra commits; \
-		    exit 0; \
+		    exit 1; \
 	    fi; \
 	fi;
 	@echo $(ext) is up-to-date;
 
 ckan-check:
-	@if [[ ! -d "$(root_dir)/ckan" ]]; then \
+	if [[ ! -d "$(root_dir)/ckan" ]]; then \
 		echo "CKAN does not available at $(root_dir)/ckan"; \
-		exit 0; \
+		exit 1; \
 	fi
-	@cd $(root_dir)/ckan; \
+	cd $(root_dir)/ckan; \
 	current_tag=$$(git describe --tags); \
 	if [[ "$$current_tag" != "$(ckan_tag)" ]]; then \
 		echo "CKAN is using wrong tag: $$current_tag. Expected: $(ckan_tag)"; \
-		exit 0; \
+		exit 1; \
 	else \
 		echo "CKAN is using correct tag: $$current_tag"; \
 	fi;
-
