@@ -1,5 +1,5 @@
 
-_version = 0.0.3
+_version = 0.0.4
 
 root_dir = ..
 vpath ckanext-% $(root_dir)
@@ -24,6 +24,9 @@ help:
 	@echo -e \\tmake check-NAME \# i.e, make check-scheming
 	@echo
 
+ckanext-% check-% sync-% install-%: type = $(word 2, $(remote-$(ext)))
+ckanext-% check-% sync-% install-%: remote = $(firstword $(remote-$(ext)))
+ckanext-% check-% sync-% install-%: target = $(lastword $(remote-$(ext)))
 
 install: $(ext_list:%=install-%)
 install-%: ckanext-%
@@ -33,12 +36,6 @@ install-%: ckanext-%
 		echo $$f; \
 		if [[ -f "$$f" ]]; then pip install -r "$$f"; fi; \
 	done;
-
-
-ckanext-% check-% sync-% install-%: type = $(word 2, $(remote-$(ext)))
-ckanext-% check-% sync-% install-%: remote = $(firstword $(remote-$(ext)))
-ckanext-% check-% sync-% install-%: target = $(lastword $(remote-$(ext)))
-
 
 ckanext: $(ext_list:%=ckanext-%)
 ckanext-%: ext = $(@:ckanext-%=%)
