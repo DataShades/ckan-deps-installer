@@ -1,5 +1,5 @@
 
-_version = 0.0.1
+_version = 0.0.3
 
 root_dir = ..
 vpath ckanext-% $(root_dir)
@@ -72,41 +72,40 @@ check: ckan-check $(ext_list:%=check-%)
 check-%: ext=$(@:check-%=%)
 check-%: ext_path=$(root_dir)/ckanext-$(ext)
 check-%:
-	if [[ ! -d "$(ext_path)" ]]; then \
+	@if [[ ! -d "$(ext_path)" ]]; then \
 		echo $(ext_path) does not exist; \
-		exit 1; \
-	fi;
+		exit 0; \
+	fi; \
 	cd "$(ext_path)"; \
 	remote_url=$$(git remote get-url origin); \
 	if [[ "$$remote_url" != "$(remote)" ]]; then \
 		echo $(ext) remote is different from $(remote): $$remote_url; \
-		exit 1; \
-	fi;
+		exit 0; \
+	fi; \
 	if [[ "$(type)" == "branch" ]]; then \
-	    cd "$(ext_path)"; \
 	    branch=$$(git branch --show-current); \
 	    if [[ "$$branch" != "$(target)" ]]; then \
 		    echo $(ext) branch is different from $(target): $$branch; \
-		    exit 1; \
+		    exit 0; \
 	    fi; \
 	    git fetch origin; \
 	    if [[ "$$(git log ..origin/$$branch)" != "" ]]; then \
 		    echo $(ext) remote has extra commits; \
-		    exit 1; \
+		    exit 0; \
 	    fi; \
 	fi;
 	@echo $(ext) is up-to-date;
 
 ckan-check:
-	if [[ ! -d "$(root_dir)/ckan" ]]; then \
-		echo "CKAN does not available at $(root_dir)/ckan"; \
-		exit 1; \
-	fi
+		@if [[ ! -d "$(root_dir)/ckan" ]]; then \
+		echo "CKAN is not available at $(root_dir)/ckan"; \
+		exit 0; \
+	fi; \
 	cd $(root_dir)/ckan; \
 	current_tag=$$(git describe --tags); \
 	if [[ "$$current_tag" != "$(ckan_tag)" ]]; then \
 		echo "CKAN is using wrong tag: $$current_tag. Expected: $(ckan_tag)"; \
-		exit 1; \
+		exit 0; \
 	else \
 		echo "CKAN is using correct tag: $$current_tag"; \
 	fi;
