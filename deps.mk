@@ -1,5 +1,5 @@
 
-_version = 0.0.4
+_version = 0.0.5
 
 root_dir = ..
 vpath ckanext-% $(root_dir)
@@ -29,6 +29,7 @@ ckanext-% check-% sync-% install-%: remote = $(firstword $(remote-$(ext)))
 ckanext-% check-% sync-% install-%: target = $(lastword $(remote-$(ext)))
 
 install: $(ext_list:%=install-%)
+install-%: ext = $(@:install-%=%)
 install-%: ckanext-%
 	cd $(root_dir)/ckanext-$(ext); \
 	pip install -e.; \
