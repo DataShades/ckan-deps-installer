@@ -1,5 +1,5 @@
 
-_version = 0.0.6
+_version = 0.0.7
 
 root_dir = ..
 vpath ckanext-% $(root_dir)
@@ -92,7 +92,7 @@ check-%:
 		    exit 0; \
 	    fi; \
 	fi; \
-	@echo $(ext) is up-to-date;
+	echo $(ext) is up-to-date;
 
 ckan-check:
 		@if [[ ! -d "$(root_dir)/ckan" ]]; then \
