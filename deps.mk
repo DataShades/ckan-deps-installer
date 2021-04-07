@@ -1,8 +1,15 @@
+_version = 0.0.8
+_installer_version ?= $(_version)
 
-_version = 0.0.7
+ifneq ($(_installer_version),$(_version))
+$(warning You are using outdated version of installer($(_version) instead of $(_installer_version)))
+$(warning Update it with `make prepare`)
+$(error Aborted)
+endif
 
 root_dir = ..
 vpath ckanext-% $(root_dir)
+
 
 help:
 	@echo Set all extensions to the correct state and reset all customizations
@@ -23,6 +30,9 @@ help:
 	@echo Check single extension
 	@echo -e \\tmake check-NAME \# i.e, make check-scheming
 	@echo
+
+prepare:
+	curl -O https://raw.githubusercontent.com/DataShades/ckan-deps-installer/v$(_installer_version)/deps.mk
 
 ckanext-% check-% sync-% install-%: type = $(word 2, $(remote-$(ext)))
 ckanext-% check-% sync-% install-%: remote = $(firstword $(remote-$(ext)))
