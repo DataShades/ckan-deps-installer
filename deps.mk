@@ -1,5 +1,5 @@
 
-_version = 0.0.5
+_version = 0.0.6
 
 root_dir = ..
 vpath ckanext-% $(root_dir)
@@ -91,7 +91,7 @@ check-%:
 		    echo $(ext) remote has extra commits; \
 		    exit 0; \
 	    fi; \
-	fi;
+	fi; \
 	@echo $(ext) is up-to-date;
 
 ckan-check:
