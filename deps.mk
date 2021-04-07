@@ -1,9 +1,8 @@
-_version = 0.0.8
+_version = 0.0.9
 _installer_version ?= $(_version)
 
 ifneq ($(_installer_version),$(_version))
 $(warning You are using outdated version of installer($(_version) instead of $(_installer_version)))
-$(warning Update it with `make prepare`)
 $(error Aborted)
 endif
 
