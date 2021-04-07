@@ -1,4 +1,4 @@
-_version = 0.0.9
+_version = 0.0.10
 _installer_version ?= $(_version)
 
 ifneq ($(_installer_version),$(_version))
@@ -29,9 +29,6 @@ help:
 	@echo Check single extension
 	@echo -e \\tmake check-NAME \# i.e, make check-scheming
 	@echo
-
-prepare:
-	curl -O https://raw.githubusercontent.com/DataShades/ckan-deps-installer/v$(_installer_version)/deps.mk
 
 ckanext-% check-% sync-% install-%: type = $(word 2, $(remote-$(ext)))
 ckanext-% check-% sync-% install-%: remote = $(firstword $(remote-$(ext)))
