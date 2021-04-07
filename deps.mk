@@ -1,9 +1,8 @@
-_version = 0.0.10
+_version = 0.0.11
 _installer_version ?= $(_version)
 
 ifneq ($(_installer_version),$(_version))
 $(warning You are using outdated version of installer($(_version) instead of $(_installer_version)))
-$(error Aborted)
 endif
 
 root_dir = ..
