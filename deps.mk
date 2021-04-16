@@ -1,4 +1,4 @@
-_version = 0.0.12
+_version = 0.0.13
 _installer_version ?= $(_version)
 
 ifneq ($(_installer_version),$(_version))
@@ -64,6 +64,7 @@ sync-%: ckanext-%
 	git fetch origin;
 	if [ "$(type)" == "branch" ]; then \
 		cd $(root_dir)/ckanext-$(ext); \
+		git reset --hard; \
 		git checkout -B $(target) origin/$(target); \
 		git reset --hard origin/$(target); \
 	fi;
