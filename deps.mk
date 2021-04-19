@@ -1,8 +1,8 @@
-_installer_version = 0.0.15
+_installer_version = 0.0.16
 _version ?= $(_installer_version)
 
 ifneq ($(_installer_version),$(_version))
-$(error You are using incorrect version of installer($(_version) instead of $(_installer_version)))
+$(warning You are using incorrect version of installer($(_version) instead of $(_installer_version)))
 endif
 
 root_dir = ..
