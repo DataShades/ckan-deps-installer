@@ -1,9 +1,5 @@
-_installer_version = 0.0.16
+_installer_version = v0.0.17
 _version ?= $(_installer_version)
-
-ifneq ($(_installer_version),$(_version))
-$(warning You are using incorrect version of installer($(_version) instead of $(_installer_version)))
-endif
 
 root_dir = ..
 vpath ckanext-% $(root_dir)
@@ -16,6 +12,8 @@ help:
 	@echo -e '\tmake prepare sync install'
 	@echo
 	@echo Targets:
+	@echo -e '\tversion - check if current version of installer is correct'
+	@echo
 	@echo -e '\tlist - list all dependencies'
 	@echo
 	@echo -e '\tckanext-NAME - clone the extension if missing and checkout to the required state'
@@ -31,6 +29,18 @@ help:
 	@echo -e '\tcheck - perform check-NAME for every single dependency'
 	@echo
 
+version:
+ifeq (master,$(_version))
+	@echo You are using master branch of deps-installer.
+	@echo 'Run `make prepare` in order to check/pull latest version'
+else
+ifneq ($(_installer_version),$(_version))
+	@echo You are using incorrect version of installer: $(_version) instead of $(_installer_version)
+	@echo 'Run `make prepare` in order to fix this problem'
+else
+	@echo Your version of installer is up-to-date
+endif
+endif
 
 list:
 	@echo $(ext_list)
