@@ -1,4 +1,4 @@
-_installer_version = 0.0.14
+_installer_version = 0.0.15
 _version ?= $(_installer_version)
 
 ifneq ($(_installer_version),$(_version))
@@ -47,7 +47,7 @@ ckanext-%:
 	@echo [Clone $* into $(ext_path)]
 	git clone $(remote) $(ext_path);
 	cd $(ext_path); \
-	if [ "$(type)" == "branch" ]; then \
+	if [ "$(type)" = "branch" ]; then \
 		git checkout -B $(target) origin/$(target); \
 	fi
 
@@ -58,7 +58,7 @@ sync-%: ckanext-%
 	git fetch origin;
 	cd $(ext_path); \
 	git reset --hard; \
-	if [ "$(type)" == "branch" ]; then \
+	if [ "$(type)" = "branch" ]; then \
 		git checkout -B $(target) origin/$(target); \
 		git reset --hard origin/$(target); \
 	fi;
@@ -82,7 +82,7 @@ check-%:
 		echo $* remote is different from $(remote): $$remote_url; \
 		exit 0; \
 	fi; \
-	if [ "$(type)" == "branch" ]; then \
+	if [ "$(type)" = "branch" ]; then \
 	    branch=$$(git rev-parse --abbrev-ref HEAD); \
 	    if [ "$$branch" != "$(target)" ]; then \
 		    echo $* branch is different from $(target): $$branch; \
