@@ -9,7 +9,7 @@ help:
 	@echo Usage:
 	@echo -e '\tmake [target]'
 	@echo TLDR\;
-	@echo -e '\tmake prepare sync install'
+	@echo -e '\tmake prepare && make sync install'
 	@echo
 	@echo Targets:
 	@echo -e '\tversion - check if current version of installer is correct'
@@ -25,8 +25,9 @@ help:
 	@echo -e '\tinstall-NAME - install the extension and its pip-requirements'
 	@echo -e '\tinstall - perform install-NAME for every single dependency'
 	@echo
+	@echo -e '\tckan-check - verify CKAN version'
 	@echo -e '\tcheck-NAME - check whether the extension is in required state'
-	@echo -e '\tcheck - perform check-NAME for every single dependency'
+	@echo -e '\tcheck - perform check-NAME for every single dependency and do `ckan-check`'
 	@echo
 
 version:
