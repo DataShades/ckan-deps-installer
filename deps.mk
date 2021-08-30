@@ -1,8 +1,9 @@
-_installer_version = v0.0.17
+_installer_version = v0.0.18
 _version ?= $(_installer_version)
 
 root_dir = ..
 vpath ckanext-% $(root_dir)
+vpath ckan $(root_dir)
 
 help:
 	@echo CKAN dependencies installer
@@ -29,6 +30,13 @@ help:
 	@echo -e '\tcheck-NAME - check whether the extension is in required state'
 	@echo -e '\tcheck - perform check-NAME for every single dependency and do `ckan-check`'
 	@echo
+	@echo -e '\tckan - clone CKAN repository'
+	@echo
+	@echo -e '\tckan-sync - set CKAN to the expected tag'
+	@echo
+	@echo -e '\tckan-install - install CKAN with its requirements'
+	@echo
+	@echo -e '\tself-install - install current extension and its requirements'
 
 version:
 ifeq (master,$(_version))
@@ -74,12 +82,46 @@ sync-%: ckanext-%
 		git reset --hard origin/$(target); \
 	fi;
 
+ckan: ckan_path=$(root_dir)/ckan
+ckan: remote=https://github.com/ckan/ckan.git
+ckan:
+	@echo [Clone ckan into $(ckan_path)]
+	git clone $(remote) $(ckan_path);
+
+ckan-sync: ckan
+	@if [ ! -d "$(root_dir)/ckan" ]; then \
+		echo "CKAN is not available at $(root_dir)/ckan"; \
+		exit 0; \
+	fi; \
+	cd $(root_dir)/ckan; \
+	git fetch origin;
+	cd $(root_dir)/ckan; \
+	git reset --hard; \
+	git checkout $(ckan_tag);
+
+ckan-install:
+	@if [ ! -d "$(root_dir)/ckan" ]; then \
+		echo "CKAN is not available at $(root_dir)/ckan"; \
+		exit 0; \
+	fi; \
+	cd $(root_dir)/ckan; \
+	pip install -e. -rrequirements.txt; \
+	if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then pip install -r "dev-requirements.txt"; fi;
+
+self-install:
+	pip install -e.; \
+	for f in requirements.txt pip-requirements.txt; do \
+		if [ -f "$$f" ]; then pip install -r "$$f"; fi; \
+	done; \
+	if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then pip install -r "dev-requirements.txt"; fi;
+
 install-%: ckanext-%
 	cd $(ext_path); \
 	pip install -e.; \
 	for f in requirements.txt pip-requirements.txt; do \
 		if [ -f "$$f" ]; then pip install -r "$$f"; fi; \
-	done;
+	done; \
+	if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then pip install -r "dev-requirements.txt"; fi;
 
 check: ckan-check
 check-%:
