@@ -105,6 +105,7 @@ ckan-install:
 		exit 0; \
 	fi; \
 	cd $(root_dir)/ckan; \
+	pip install -rrequirement-setuptools.txt; \
 	pip install -e. -rrequirements.txt; \
 	if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then pip install -r "dev-requirements.txt"; fi;
 
