@@ -112,7 +112,7 @@ ckan-install:
 self-install:
 	pip install -e.; \
 	for f in requirements.txt pip-requirements.txt; do \
-		if [ -f "$$f" ]; then pip install -r "$$f"; fi; \
+		if [ -f "$$f" ]; then pip install -U -r "$$f"; fi; \
 	done; \
 	if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then pip install -r "dev-requirements.txt"; fi;
 
