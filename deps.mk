@@ -1,4 +1,4 @@
-_installer_version = v0.0.18
+_installer_version = v0.0.19
 _version ?= $(_installer_version)
 
 root_dir = ..
@@ -68,6 +68,8 @@ ckanext-%:
 	cd $(ext_path); \
 	if [ "$(type)" = "branch" ]; then \
 		git checkout -B $(target) origin/$(target); \
+	elif [ "$(type)" = "tag" ] || [ "$(type)" = "commit" ]; then \
+		git checkout $(target); \
 	fi
 
 sync-%: ckanext-%
@@ -80,7 +82,10 @@ sync-%: ckanext-%
 	if [ "$(type)" = "branch" ]; then \
 		git checkout -B $(target) origin/$(target); \
 		git reset --hard origin/$(target); \
-	fi;
+	elif [ "$(type)" = "tag" ] || [ "$(type)" = "commit" ]; then \
+		git checkout $(target); \
+	fi; \
+  git clean -df;
 
 ckan: ckan_path=$(root_dir)/ckan
 ckan: remote=https://github.com/ckan/ckan.git
@@ -137,16 +142,27 @@ check-%:
 		exit 0; \
 	fi; \
 	if [ "$(type)" = "branch" ]; then \
-	    branch=$$(git rev-parse --abbrev-ref HEAD); \
-	    if [ "$$branch" != "$(target)" ]; then \
-		    echo $* branch is different from $(target): $$branch; \
-		    exit 0; \
-	    fi; \
-	    git fetch origin; \
-	    if [ "$$(git log ..origin/$$branch)" != "" ]; then \
-		    echo $* remote has extra commits; \
-		    exit 0; \
-	    fi; \
+		branch=$$(git rev-parse --abbrev-ref HEAD); \
+		if [ "$$branch" != "$(target)" ]; then \
+			echo $* branch is different from $(target): $$branch; \
+			exit 0; \
+		fi; \
+		git fetch origin; \
+		if [ "$$(git log ..origin/$$branch)" != "" ]; then \
+			echo $* remote has extra commits; \
+			exit 0; \
+		fi; \
+	elif [ "$(type)" = "commit" ] || [ "$(type)" = "tag" ]; then \
+		expected=$$(git show --format="%H" $(target) -q); \
+		current=$$(git show --format="%H" -q); \
+		if [ "$$current" != "$$expected" ]; then \
+			if [ "$(type)" = "tag" ]; then\
+				echo "$* commit is different from $(target)($$expected): $$current"; \
+			else \
+				echo "$* commit is different from $(target): $$current"; \
+			fi; \
+			exit 0; \
+		fi; \
 	fi; \
 	echo $* is up-to-date;
 
