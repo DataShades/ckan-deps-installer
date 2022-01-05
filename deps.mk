@@ -1,16 +1,74 @@
-_installer_version = v0.0.19
+_installer_version = v0.0.20
 _version ?= $(_installer_version)
 
+develop =
+local =
+
 root_dir = ..
+index = pypi
+
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
 
+define pip-file
+pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)");
+endef
+
+define self-install
+pip install -e.$(if $(local), --no-index -f "$(root_dir)/$(index)");
+endef
+
+define deps-install
+for f in requirements.txt pip-requirements.txt; do \
+	if [ -f "$$f" ]; then $(call pip-file,$$f,1) fi; \
+done;
+endef
+
+define dev-install
+if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then \
+	$(call pip-file,dev-requirements.txt) \
+fi;
+endef
+
+define	ensure-ckan
+@if [ ! -d "$(root_dir)/ckan" ]; then \
+	echo "CKAN is not available at $(root_dir)/ckan"; \
+	exit 0; \
+fi;
+endef
+
+define checkout-branch
+git checkout -B $(1) origin/$(1); \
+git reset --hard origin/$(1);
+endef
+
+define checkout-tag
+git checkout $(1);
+endef
+
+define checkout-commit
+git checkout $(1);
+endef
+
+define checkout-target
+$(call checkout-$(2),$(1))
+endef
+
+define download-packages
+pip download . -d "$(root_dir)/$(index)"; \
+for f in requirements.txt pip-requirements.txt dev-requirements.txt; do \
+	if [ -f "$$f" ]; then pip download -r "$$f" -d "$(root_dir)/$(index)"; fi; \
+done;
+endef
+
 help:
 	@echo CKAN dependencies installer
+	@echo
 	@echo Usage:
 	@echo -e '\tmake [target]'
 	@echo TLDR\;
-	@echo -e '\tmake prepare && make sync install'
+	@echo -e '\tmake prepare'
+	@echo -e '\tmake full-upgrade'
 	@echo
 	@echo Targets:
 	@echo -e '\tversion - check if current version of installer is correct'
@@ -31,12 +89,23 @@ help:
 	@echo -e '\tcheck - perform check-NAME for every single dependency and do `ckan-check`'
 	@echo
 	@echo -e '\tckan - clone CKAN repository'
-	@echo
 	@echo -e '\tckan-sync - set CKAN to the expected tag'
-	@echo
 	@echo -e '\tckan-install - install CKAN with its requirements'
 	@echo
 	@echo -e '\tself-install - install current extension and its requirements'
+	@echo
+	@echo -e '\tfull-upgrade - synchronize and install everything(it is just a combination of `sync ckan-sync install ckan-install self-install`)'
+	@echo
+	@echo -e '\tlocal-index - download all the requirements. This allows you to install the project with `local=1` flag even without internet access'
+	@echo
+	@echo 'Flags:'
+	@echo -e '\tinstall*:'
+	@echo -e '\t\tdevelop=1 - install dev-requirements if present'
+	@echo -e '\t\tlocal=1   - use local packages instead of PyPI(you need to build it first via `make local-index`)'
+	@echo
+	@echo -e '\tinstall*, local-index:'
+	@echo -e "\t\tindex=pypi - path to local package index(relative to $$(realpath $(root_dir))). By default: $(index)"
+	@echo
 
 version:
 ifeq (master,$(_version))
@@ -56,21 +125,19 @@ list:
 
 .SECONDEXPANSION:
 
-install ckanext sync check: $(ext_list:%=$$@-%)
-ckanext-% check-% sync-% install-%: ext_path=$(root_dir)/ckanext-$*
+install ckanext sync check local-index: $(ext_list:%=$$@-%)
+ckanext-% check-% sync-% install-% local-index-% %.tar: ext_path=$(root_dir)/ckanext-$*
 ckanext-% check-% sync-% install-%: type = $(word 2, $(remote-$*))
 ckanext-% check-% sync-% install-%: remote = $(firstword $(remote-$*))
 ckanext-% check-% sync-% install-%: target = $(lastword $(remote-$*))
+archive: $(ext_list:%=%.tar)
+
 
 ckanext-%:
 	@echo [Clone $* into $(ext_path)]
 	git clone $(remote) $(ext_path);
 	cd $(ext_path); \
-	if [ "$(type)" = "branch" ]; then \
-		git checkout -B $(target) origin/$(target); \
-	elif [ "$(type)" = "tag" ] || [ "$(type)" = "commit" ]; then \
-		git checkout $(target); \
-	fi
+	$(call checkout-target,$(target),$(type))
 
 sync-%: ckanext-%
 	@echo [Synchronize $*];
@@ -79,13 +146,8 @@ sync-%: ckanext-%
 	git fetch origin;
 	cd $(ext_path); \
 	git reset --hard; \
-	if [ "$(type)" = "branch" ]; then \
-		git checkout -B $(target) origin/$(target); \
-		git reset --hard origin/$(target); \
-	elif [ "$(type)" = "tag" ] || [ "$(type)" = "commit" ]; then \
-		git checkout $(target); \
-	fi; \
-  git clean -df;
+	$(call checkout-target,$(target),$(type)) \
+	git clean -df;
 
 ckan: ckan_path=$(root_dir)/ckan
 ckan: remote=https://github.com/ckan/ckan.git
@@ -94,10 +156,7 @@ ckan:
 	git clone $(remote) $(ckan_path);
 
 ckan-sync: ckan
-	@if [ ! -d "$(root_dir)/ckan" ]; then \
-		echo "CKAN is not available at $(root_dir)/ckan"; \
-		exit 0; \
-	fi; \
+	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
 	git fetch origin;
 	cd $(root_dir)/ckan; \
@@ -105,29 +164,23 @@ ckan-sync: ckan
 	git checkout $(ckan_tag);
 
 ckan-install:
-	@if [ ! -d "$(root_dir)/ckan" ]; then \
-		echo "CKAN is not available at $(root_dir)/ckan"; \
-		exit 0; \
-	fi; \
+	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
-	pip install -rrequirement-setuptools.txt; \
-	pip install -e. -rrequirements.txt; \
-	if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then pip install -r "dev-requirements.txt"; fi;
+	$(call pip-file,requirement-setuptools.txt) \
+	$(call self-install) \
+	$(call deps-install) \
+	$(call dev-install)
 
 self-install:
-	pip install -e.; \
-	for f in requirements.txt pip-requirements.txt; do \
-		if [ -f "$$f" ]; then pip install -U -r "$$f"; fi; \
-	done; \
-	if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then pip install -r "dev-requirements.txt"; fi;
+	$(call self-install) \
+	$(call deps-install) \
+	$(call dev-install)
 
 install-%: ckanext-%
 	cd $(ext_path); \
-	pip install -e.; \
-	for f in requirements.txt pip-requirements.txt; do \
-		if [ -f "$$f" ]; then pip install -r "$$f"; fi; \
-	done; \
-	if [ "$(develop)" != "" ] && [ -f "dev-requirements.txt" ]; then pip install -r "dev-requirements.txt"; fi;
+	$(call self-install) \
+	$(call deps-install) \
+	$(call dev-install)
 
 check: ckan-check
 check-%:
@@ -167,10 +220,7 @@ check-%:
 	echo $* is up-to-date;
 
 ckan-check:
-	@if [ ! -d "$(root_dir)/ckan" ]; then \
-		echo "CKAN is not available at $(root_dir)/ckan"; \
-		exit 0; \
-	fi; \
+	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
 	current_tag=$$(git describe --tags); \
 	if [ "$$current_tag" != "$(ckan_tag)" ]; then \
@@ -179,3 +229,37 @@ ckan-check:
 	else \
 		echo "CKAN is using correct tag: $$current_tag"; \
 	fi;
+
+full-upgrade: ckan-sync sync ckan-install install self-install
+
+local-index:
+	$(call ensure-ckan)
+	cd $(root_dir)/ckan; \
+	pip download wheel -r "requirement-setuptools.txt" -d "$(root_dir)/$(index)"; \
+	$(call download-packages)
+	$(call download-packages)
+
+local-index-%:
+	cd $(ext_path); \
+	$(call download-packages)
+
+%.tar:
+	tar cvf $(root_dir)/$@ --exclude-vcs --exclude-vcs-ignores $(ext_path)
+
+archive:
+	tar cvf $(root_dir)/src.tar --exclude-vcs --exclude-vcs-ignores $(root_dir)/ckan;
+	for ext in $(ext_list); do \
+		tar Af $(root_dir)/src.tar --exclude-vcs --exclude-vcs-ignores "$(root_dir)/$$ext.tar"; \
+		rm -f $(root_dir)/$$ext.tar; \
+	done;
+	self=$$(basename $$PWD); \
+	tar cvf "$(root_dir)/$$self.tar" "../$$self/deps.mk" --exclude-vcs --exclude-vcs-ignores "../$$self"; \
+	tar Af $(root_dir)/src.tar "$(root_dir)/$$self.tar"; \
+	rm -f "$(root_dir)/$$self.tar"
+
+	tar cvf "$(root_dir)/$(index).tar" "$(root_dir)/$(index)"; \
+	tar Af $(root_dir)/src.tar "$(root_dir)/$(index).tar"; \
+	rm -f "$(root_dir)/$(index).tar"
+
+	gzip < "$(root_dir)/src.tar" > "$(root_dir)/src.tar.gz"
+	rm -f "$(root_dir)/src.tar"
