@@ -1,4 +1,4 @@
-_installer_version = v0.0.20
+_installer_version = v0.0.21
 _version ?= $(_installer_version)
 
 develop =
@@ -221,7 +221,7 @@ check-%:
 
 ckan-check:
 	$(call ensure-ckan)
-	cd $(root_dir)/ckan; \
+	@cd $(root_dir)/ckan; \
 	current_tag=$$(git describe --tags); \
 	if [ "$$current_tag" != "$(ckan_tag)" ]; then \
 		echo "CKAN is using wrong tag: $$current_tag. Expected: $(ckan_tag)"; \
