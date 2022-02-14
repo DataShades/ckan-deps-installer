@@ -244,16 +244,16 @@ local-index-%:
 	$(call download-packages)
 
 %.tar:
-	tar cvf $(root_dir)/$@ --exclude-vcs --exclude-vcs-ignores $(ext_path)
+	tar cvf $(root_dir)/$@ --exclude-vcs $(ext_path)
 
 archive:
-	tar cvf $(root_dir)/src.tar --exclude-vcs --exclude-vcs-ignores $(root_dir)/ckan;
+	tar cvf $(root_dir)/src.tar --exclude-vcs $(root_dir)/ckan;
 	for ext in $(ext_list); do \
-		tar Af $(root_dir)/src.tar --exclude-vcs --exclude-vcs-ignores "$(root_dir)/$$ext.tar"; \
+		tar Af $(root_dir)/src.tar --exclude-vcs "$(root_dir)/$$ext.tar"; \
 		rm -f $(root_dir)/$$ext.tar; \
 	done;
 	self=$$(basename $$PWD); \
-	tar cvf "$(root_dir)/$$self.tar" "../$$self/deps.mk" --exclude-vcs --exclude-vcs-ignores "../$$self"; \
+	tar cvf "$(root_dir)/$$self.tar" "../$$self/deps.mk" --exclude-vcs "../$$self"; \
 	tar Af $(root_dir)/src.tar "$(root_dir)/$$self.tar"; \
 	rm -f "$(root_dir)/$$self.tar"
 
