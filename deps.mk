@@ -1,4 +1,4 @@
-_installer_version = v0.0.21
+_installer_version = v0.0.22
 _version ?= $(_installer_version)
 
 develop =
@@ -253,7 +253,7 @@ archive:
 		rm -f $(root_dir)/$$ext.tar; \
 	done;
 	self=$$(basename $$PWD); \
-	tar cvf "$(root_dir)/$$self.tar" "../$$self/deps.mk" --exclude-vcs "../$$self"; \
+	tar cvf "$(root_dir)/$$self.tar" "$(root_dir)/$$self/deps.mk" --exclude-vcs "$(root_dir)/$$self"; \
 	tar Af $(root_dir)/src.tar "$(root_dir)/$$self.tar"; \
 	rm -f "$(root_dir)/$$self.tar"
 
