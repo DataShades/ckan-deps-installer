@@ -1,4 +1,4 @@
-_installer_version = v0.0.22
+_installer_version = v0.0.23
 _version ?= $(_installer_version)
 
 develop =
@@ -11,11 +11,11 @@ vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
 
 define pip-file
-pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)");
+pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") --use-feature=2020-resolver;
 endef
 
 define self-install
-pip install -e.$(if $(local), --no-index -f "$(root_dir)/$(index)");
+pip install -e.$(if $(local), --no-index -f "$(root_dir)/$(index)") --use-feature=2020-resolver;
 endef
 
 define deps-install
@@ -55,9 +55,9 @@ $(call checkout-$(2),$(1))
 endef
 
 define download-packages
-pip download . -d "$(root_dir)/$(index)"; \
+pip download . -d "$(root_dir)/$(index)" --use-feature=2020-resolver; \
 for f in requirements.txt pip-requirements.txt dev-requirements.txt; do \
-	if [ -f "$$f" ]; then pip download -r "$$f" -d "$(root_dir)/$(index)"; fi; \
+	if [ -f "$$f" ]; then pip download -r "$$f" -d "$(root_dir)/$(index)" --use-feature=2020-resolver; fi; \
 done;
 endef
 
@@ -235,7 +235,7 @@ full-upgrade: ckan-sync sync ckan-install install self-install
 local-index:
 	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
-	pip download wheel -r "requirement-setuptools.txt" -d "$(root_dir)/$(index)"; \
+	pip download wheel -r "requirement-setuptools.txt" -d "$(root_dir)/$(index)" --use-feature=2020-resolver; \
 	$(call download-packages)
 	$(call download-packages)
 
