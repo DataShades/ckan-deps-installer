@@ -1,4 +1,4 @@
-_installer_version = v0.0.23
+_installer_version = v0.0.24
 _version ?= $(_installer_version)
 
 develop =
@@ -6,6 +6,8 @@ local =
 
 root_dir = ..
 index = pypi
+
+alternative =
 
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
@@ -61,6 +63,14 @@ for f in requirements.txt pip-requirements.txt dev-requirements.txt; do \
 done;
 endef
 
+define resolve-remote
+$(or $($(alternative)-$(1)),$(remote-$(1)),$(call ckan-maintained-remote,$(1)))
+endef
+
+define ckan-maintained-remote
+https://github.com/ckan/ckanext-$(1).git branch master
+endef
+
 help:
 	@echo CKAN dependencies installer
 	@echo
@@ -99,6 +109,9 @@ help:
 	@echo -e '\tlocal-index - download all the requirements. This allows you to install the project with `local=1` flag even without internet access'
 	@echo
 	@echo 'Flags:'
+	@echo -e '\tsync*:'
+	@echo -e '\t\talternative=<prefix> - try using `<prefix>-<ext>` definition of extensions before falling back to `remote-<ext>`'
+	@echo
 	@echo -e '\tinstall*:'
 	@echo -e '\t\tdevelop=1 - install dev-requirements if present'
 	@echo -e '\t\tlocal=1   - use local packages instead of PyPI(you need to build it first via `make local-index`)'
@@ -127,9 +140,9 @@ list:
 
 install ckanext sync check local-index: $(ext_list:%=$$@-%)
 ckanext-% check-% sync-% install-% local-index-% %.tar: ext_path=$(root_dir)/ckanext-$*
-ckanext-% check-% sync-% install-%: type = $(word 2, $(remote-$*))
-ckanext-% check-% sync-% install-%: remote = $(firstword $(remote-$*))
-ckanext-% check-% sync-% install-%: target = $(lastword $(remote-$*))
+ckanext-% check-% sync-% install-%: type = $(word 2, $(call resolve-remote,$*))
+ckanext-% check-% sync-% install-%: remote = $(firstword $(call resolve-remote,$*))
+ckanext-% check-% sync-% install-%: target = $(lastword $(call resolve-remote,$*))
 archive: $(ext_list:%=%.tar)
 
 
