@@ -1,4 +1,4 @@
-_installer_version = v0.0.26
+_installer_version = v0.0.27
 _version ?= $(_installer_version)
 
 develop =
@@ -11,16 +11,17 @@ alternative =
 remote-ckan ?= https://github.com/ckan/ckan.git tag $(ckan_tag)
 py2 =
 upgrade_requirements ?= 1
+use_2020_resolver ?= 1
 
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
 
 define pip-file
-pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") --use-feature=2020-resolver;
+pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(use_2020_resolver),--use-feature=2020-resolver);
 endef
 
 define self-install
-pip install -e.$(if $(local), --no-index -f "$(root_dir)/$(index)") --use-feature=2020-resolver;
+pip install -e.$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(use_2020_resolver),--use-feature=2020-resolver);
 endef
 
 define deps-install
@@ -61,9 +62,9 @@ $(call checkout-$(2),$(1))
 endef
 
 define download-packages
-pip download . -d "$(root_dir)/$(index)" --use-feature=2020-resolver; \
+pip download . -d "$(root_dir)/$(index)" $(if $(use_2020_resolver),--use-feature=2020-resolver); \
 for f in requirements.txt pip-requirements.txt dev-requirements.txt; do \
-	if [ -f "$$f" ]; then pip download -r "$$f" -d "$(root_dir)/$(index)" --use-feature=2020-resolver; fi; \
+	if [ -f "$$f" ]; then pip download -r "$$f" -d "$(root_dir)/$(index)" $(if $(use_2020_resolver),--use-feature=2020-resolver); fi; \
 done;
 endef
 
@@ -257,7 +258,7 @@ full-upgrade: ckan-sync sync ckan-install install self-install
 local-index:
 	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
-	pip download wheel -r "requirement-setuptools.txt" -d "$(root_dir)/$(index)" --use-feature=2020-resolver; \
+	pip download wheel -r "requirement-setuptools.txt" -d "$(root_dir)/$(index)" $(if $(use_2020_resolver),--use-feature=2020-resolver); \
 	$(call download-packages)
 	$(call download-packages)
 
