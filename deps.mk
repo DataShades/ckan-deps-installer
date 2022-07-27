@@ -1,4 +1,4 @@
-_installer_version = v0.0.24
+_installer_version = v0.0.25
 _version ?= $(_installer_version)
 
 develop =
@@ -8,6 +8,7 @@ root_dir = ..
 index = pypi
 
 alternative =
+remote-ckan ?= https://github.com/ckan/ckan.git tag $(ckan_tag)
 
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
@@ -163,7 +164,10 @@ sync-%: ckanext-%
 	git clean -df;
 
 ckan: ckan_path=$(root_dir)/ckan
-ckan: remote=https://github.com/ckan/ckan.git
+
+ckan ckan-sync: type = $(word 2, $(call resolve-remote,ckan))
+ckan ckan-sync: remote = $(firstword $(call resolve-remote,ckan))
+ckan ckan-sync: target = $(lastword $(call resolve-remote,ckan))
 ckan:
 	@echo [Clone ckan into $(ckan_path)]
 	git clone $(remote) $(ckan_path);
@@ -171,10 +175,12 @@ ckan:
 ckan-sync: ckan
 	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
+	git remote set-url origin $(remote); \
 	git fetch origin;
 	cd $(root_dir)/ckan; \
 	git reset --hard; \
-	git checkout $(ckan_tag);
+	$(call checkout-target,$(target),$(type)) \
+	git clean -df;
 
 ckan-install:
 	$(call ensure-ckan)
