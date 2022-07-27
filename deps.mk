@@ -1,4 +1,4 @@
-_installer_version = v0.0.25
+_installer_version = v0.0.26
 _version ?= $(_installer_version)
 
 develop =
@@ -9,6 +9,8 @@ index = pypi
 
 alternative =
 remote-ckan ?= https://github.com/ckan/ckan.git tag $(ckan_tag)
+py2 =
+upgrade_requirements ?= 1
 
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
@@ -23,7 +25,8 @@ endef
 
 define deps-install
 for f in requirements.txt pip-requirements.txt; do \
-	if [ -f "$$f" ]; then $(call pip-file,$$f,1) fi; \
+	if [ -n "$(py2)" ]; then altf=$$(basename $$f .txt)-py2.txt; if [ -f "$$altf" ]; then f="$$altf"; fi; fi; \
+	if [ -f "$$f" ]; then $(call pip-file,$$f,$(upgrade_requirements)) fi; \
 done;
 endef
 
