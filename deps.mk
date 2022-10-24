@@ -1,4 +1,4 @@
-_installer_version = v0.0.27
+_installer_version = v0.0.28
 _version ?= $(_installer_version)
 
 develop =
@@ -11,7 +11,7 @@ alternative =
 remote-ckan ?= https://github.com/ckan/ckan.git tag $(ckan_tag)
 py2 =
 upgrade_requirements ?= 1
-use_2020_resolver ?= 1
+use_2020_resolver =
 
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
@@ -171,7 +171,7 @@ ckan: ckan_path=$(root_dir)/ckan
 
 ckan ckan-sync: type = $(word 2, $(call resolve-remote,ckan))
 ckan ckan-sync: remote = $(firstword $(call resolve-remote,ckan))
-ckan ckan-sync: target = $(lastword $(call resolve-remote,ckan))
+ckan ckan-sync ckan-check: target = $(lastword $(call resolve-remote,ckan))
 ckan:
 	@echo [Clone ckan into $(ckan_path)]
 	git clone $(remote) $(ckan_path);
@@ -246,8 +246,8 @@ ckan-check:
 	$(call ensure-ckan)
 	@cd $(root_dir)/ckan; \
 	current_tag=$$(git describe --tags); \
-	if [ "$$current_tag" != "$(ckan_tag)" ]; then \
-		echo "CKAN is using wrong tag: $$current_tag. Expected: $(ckan_tag)"; \
+	if [ "$$current_tag" != "$(target)" ]; then \
+		echo "CKAN is using wrong tag: $$current_tag. Expected: $(target)"; \
 		exit 0; \
 	else \
 		echo "CKAN is using correct tag: $$current_tag"; \
