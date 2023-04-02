@@ -16,6 +16,8 @@ ctb make config deps-makefile > Makefile
 
 ## Usage
 
+**Run `make prepare` before using any of the commands below.**
+
 Whenever it's possible, consider using PyPI and `requirements.txt`(or
 setuptools' `install_requires` option). And only if extensions is not published
 to PyPI(or you need specific branch/tag/commit) use current tool.
