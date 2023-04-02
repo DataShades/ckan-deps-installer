@@ -120,9 +120,9 @@ added to the command. For example, `install` command can install
 make install develop=1
 ```
 
-| Commands              | Flag                 | Example         | Behavior                                                                                                                                  |
-|-----------------------|----------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| sync*                 | alternative=<prefix> | alternative=dev | try using `<prefix>-<ext>`(i.e, `dev-spatial` instead of `remote-spatial`) definition of extensions before falling back to `remote-<ext>` |
-| install*              | develop=<anything>   | develop=1       | install dev-requirements if present                                                                                                       |
-|                       | local=<anything>     | local=1         | use local packages instead of PyPI(you need to build it first via `make local-index`)                                                     |
-| install*, local-index | index=<folder>       | index=pypi      | path to local package index(relative to /home/sergey/projects/oeh). By default: pypi                                                      |
+| Commands              | Flag               | Example         | Behavior                                                                                                                                  |
+|-----------------------|--------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| sync*                 | alternative=PREFIX | alternative=dev | try using `<prefix>-<ext>`(i.e, `dev-spatial` instead of `remote-spatial`) definition of extensions before falling back to `remote-<ext>` |
+| install*              | develop=ANYTHING   | develop=1       | install dev-requirements if present                                                                                                       |
+| install*              | local=ANYTHING     | local=1         | use local packages instead of PyPI(you need to build it first via `make local-index`)                                                     |
+| install*, local-index | index=FOLDER       | index=pypi      | path to local package index(relative to parent directory: `../`). By default: pypi                                                        |
