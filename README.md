@@ -31,7 +31,7 @@ Any new dependency requires two changes in Makefile:
 1. Add extension alias to `ext_list` variable.
 2. Describe the alias using syntax:
    ```sh
-   remote-<ALIAS> = <REPOSITORY URL> <REFERENCE TYPE> <REFERENCE>
+   remote-ALIAS = REPOSITORY_URL REFERENCE_TYPE REFERENCE
    ```
 
 You can use any word as alias, but the simplest option is to use extension
@@ -41,7 +41,7 @@ name. For example:
 * use `dcat` as alias for `ckanext-dcat` and start alias' description with `remote-dcat = ...`
 * use `spatial` as alias for `ckanext-spatial` and start alias' description with `remote-spatial = ...`
 
-Repository URL is the same as one, you are using for `git clone <REPOSITORY URL>`. For example:
+Repository URL is the same as one, you are using for `git clone REPOSITORY_URL`. For example:
 
 * `ckanext-scheming`:  https://github.com/ckan/ckanext-scheming.git
 * `ckanext-dcat`:  https://github.com/ckan/ckanext-dcat.git
@@ -69,12 +69,12 @@ Now you can do the following:
 
 * Synchronize(download missing and switch existing to correct tag/commit/branch) specific extension using its alias:
   ```sh
-  make sync-<ALIAS>
+  make sync-ALIAS
   # for example: make sync-spatial
   ```
 * Install specific extension using its alias. This command will install extension itself, and its `requirements.txt` if available.
   ```sh
-  make install-<ALIAS>
+  make install-ALIAS
   # for example: make install-spatial
   ```
 
@@ -91,25 +91,26 @@ Now you can do the following:
 
 ## Commands
 
-| Command         | Description                                                                                                            |
-|-----------------|------------------------------------------------------------------------------------------------------------------------|
-| version         | check if current version of installer is correct                                                                       |
-| list            | list all dependencies                                                                                                  |
-| ckanext-<ALIAS> | clone the extension if missing and checkout to the required state                                                      |
-| ckanext         | perform ckanext-<ALIAS> for every single dependency                                                                    |
-| sync-NAME       | clone, update origin, reset changes and checkout the extension                                                         |
-| sync            | perform sync-<ALIAS> for every single dependency                                                                       |
-| install-<ALIAS> | install the extension and its pip-requirements                                                                         |
-| install         | perform install-<ALIAS> for every single dependency                                                                    |
-| ckan-check      | verify CKAN version                                                                                                    |
-| check-<ALIAS>   | check whether the extension is in required state                                                                       |
-| check           | perform check-<ALIAS> for every single dependency and do `ckan-check`                                                  |
-| ckan            | clone CKAN repository                                                                                                  |
-| ckan-sync       | set CKAN to the expected tag                                                                                           |
-| ckan-install    | install CKAN with its requirements                                                                                     |
-| self-install    | install current extension and its requirements                                                                         |
-| full-upgrade    | synchronize and install everything(it is just a combination of `sync ckan-sync install ckan-install self-install`)     |
-| local-index     | download all the requirements. This allows you to install the project with `local=1` flag even without internet access |
+| Command       | Description                                                                                                            |
+|---------------|------------------------------------------------------------------------------------------------------------------------|
+| version       | check if current version of installer is correct                                                                       |
+| prepare       | Download/update `deps.mk` file, that contains the main logic                                                           |
+| list          | list all dependencies                                                                                                  |
+| ckanext-ALIAS | clone the extension if missing and checkout to the required state                                                      |
+| ckanext       | perform ckanext-ALIAS for every single dependency                                                                      |
+| sync-ALIAS    | clone, update origin, reset changes and checkout the extension                                                         |
+| sync          | perform sync-ALIAS for every single dependency                                                                         |
+| install-ALIAS | install the extension and its pip-requirements                                                                         |
+| install       | perform install-ALIAS for every single dependency                                                                      |
+| ckan-check    | verify CKAN version                                                                                                    |
+| check-ALIAS   | check whether the extension is in required state                                                                       |
+| check         | perform check-ALIAS for every single dependency and do `ckan-check`                                                    |
+| ckan          | clone CKAN repository                                                                                                  |
+| ckan-sync     | set CKAN to the expected tag                                                                                           |
+| ckan-install  | install CKAN with its requirements                                                                                     |
+| self-install  | install current extension and its requirements                                                                         |
+| full-upgrade  | synchronize and install everything(it is just a combination of `sync ckan-sync install ckan-install self-install`)     |
+| local-index   | download all the requirements. This allows you to install the project with `local=1` flag even without internet access |
 
 In addition, some commands can behave differently when additional flags(`x=y`)
 added to the command. For example, `install` command can install
