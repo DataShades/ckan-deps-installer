@@ -1,4 +1,4 @@
-_installer_version = v0.0.28
+_installer_version = v0.0.29
 _version ?= $(_installer_version)
 
 develop =
@@ -229,8 +229,8 @@ check-%:
 			exit 0; \
 		fi; \
 	elif [ "$(type)" = "commit" ] || [ "$(type)" = "tag" ]; then \
-		expected=$$(git show --format="%H" $(target) -q); \
-		current=$$(git show --format="%H" -q); \
+		expected=$$(git rev-list -n1 $(target)); \
+		current=$$(git rev-list -n1 HEAD); \
 		if [ "$$current" != "$$expected" ]; then \
 			if [ "$(type)" = "tag" ]; then\
 				echo "$* commit is different from $(target)($$expected): $$current"; \
