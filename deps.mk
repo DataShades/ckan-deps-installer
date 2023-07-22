@@ -1,4 +1,4 @@
-_installer_version = v0.0.29
+_installer_version = v0.0.30
 _version ?= $(_installer_version)
 
 develop =
@@ -161,7 +161,7 @@ sync-%: ckanext-%
 	@echo [Synchronize $*];
 	cd $(ext_path); \
 	git remote set-url origin $(remote); \
-	git fetch origin;
+	git fetch origin --tags;
 	cd $(ext_path); \
 	git reset --hard; \
 	$(call checkout-target,$(target),$(type)) \
@@ -180,7 +180,7 @@ ckan-sync: ckan
 	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
 	git remote set-url origin $(remote); \
-	git fetch origin;
+	git fetch origin --tags;
 	cd $(root_dir)/ckan; \
 	git reset --hard; \
 	$(call checkout-target,$(target),$(type)) \
@@ -223,7 +223,7 @@ check-%:
 			echo $* branch is different from $(target): $$branch; \
 			exit 0; \
 		fi; \
-		git fetch origin; \
+		git fetch origin --tags; \
 		if [ "$$(git log ..origin/$$branch)" != "" ]; then \
 			echo $* remote has extra commits; \
 			exit 0; \
