@@ -88,6 +88,24 @@ Now you can do the following:
   make full-upgrade
   ```
 
+If you want to install extra packages(`pip install my_pkg[extra1,extra2]`), add following variable to the Makefile:
+
+```sh
+package_extras-remote-ALIAS = extra1,extra2
+```
+
+For example, if you want to install `test` extras for scheming and you defined
+scheming as `remote-scheming`, you need the following line:
+
+```sh
+package_extras-remote-scheming = test
+```
+
+If you are using alternatives(`<alternative>-<alias>`, described below), replace `remote` part with an alternative name. I.e, for `alternative=dev`, you need to adapt extras definition in the following way:
+```sh
+package_extras-dev-scheming = test
+```
+
 
 ## Commands
 
@@ -120,9 +138,10 @@ added to the command. For example, `install` command can install
 make install develop=1
 ```
 
-| Commands              | Flag               | Example         | Behavior                                                                                                                                  |
-|-----------------------|--------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| sync*                 | alternative=PREFIX | alternative=dev | try using `<prefix>-<ext>`(i.e, `dev-spatial` instead of `remote-spatial`) definition of extensions before falling back to `remote-<ext>` |
-| install*              | develop=ANYTHING   | develop=1       | install dev-requirements if present                                                                                                       |
-| install*              | local=ANYTHING     | local=1         | use local packages instead of PyPI(you need to build it first via `make local-index`)                                                     |
-| install*, local-index | index=FOLDER       | index=pypi      | path to local package index(relative to parent directory: `../`). By default: pypi                                                        |
+| Commands              | Flag                        | Example              | Behavior                                                                                                                                                                         |
+|-----------------------|-----------------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| sync*                 | alternative=PREFIX          | alternative=dev      | try using `<prefix>-<ext>`(i.e, `dev-spatial` instead of `remote-spatial`) definition of extensions before falling back to `remote-<ext>`. Default alternative value is `remote` |
+| install*              | develop=ANYTHING            | develop=1            | install dev-requirements if present                                                                                                                                              |
+| install*              | local=ANYTHING              | local=1              | use local packages instead of PyPI(you need to build it first via `make local-index`)                                                                                            |
+| install*              | pyright_compatible=ANYTHING | pyright_compatible=1 | make sure pyright can find installed packages during typechecking(via exporting `SETUPTOOLS_ENABLE_FEATURES="legacy-editable"`)                                                  |
+| install*, local-index | index=FOLDER                | index=pypi           | path to local package index(relative to parent directory: `../`). By default: pypi                                                                                               |

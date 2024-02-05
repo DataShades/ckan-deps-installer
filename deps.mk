@@ -1,13 +1,14 @@
-_installer_version = v0.0.30
+_installer_version = v0.0.31
 _version ?= $(_installer_version)
 
 develop =
 local =
+pyright_compatible =
 
 root_dir = ..
-index = pypi
+index ?= pypi
 
-alternative =
+alternative ?= remote
 remote-ckan ?= https://github.com/ckan/ckan.git tag $(ckan_tag)
 py2 =
 upgrade_requirements ?= 1
@@ -21,7 +22,11 @@ pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(i
 endef
 
 define self-install
-pip install -e.$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(use_2020_resolver),--use-feature=2020-resolver);
+$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install -e'.$(if $(1),[$(1)])' $(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(use_2020_resolver),--use-feature=2020-resolver);
+endef
+
+define resolve-package-extras
+$(package_extras-$(alternative)-$(1))
 endef
 
 define deps-install
@@ -120,6 +125,7 @@ help:
 	@echo -e '\tinstall*:'
 	@echo -e '\t\tdevelop=1 - install dev-requirements if present'
 	@echo -e '\t\tlocal=1   - use local packages instead of PyPI(you need to build it first via `make local-index`)'
+	@echo -e '\t\tpyright_compatible=1 - make sure pyright can find installed packages during typechecking'
 	@echo
 	@echo -e '\tinstall*, local-index:'
 	@echo -e "\t\tindex=pypi - path to local package index(relative to $$(realpath $(root_dir))). By default: $(index)"
@@ -147,9 +153,12 @@ install ckanext sync check local-index: $(ext_list:%=$$@-%)
 ckanext-% check-% sync-% install-% local-index-% %.tar: ext_path=$(root_dir)/ckanext-$*
 ckanext-% check-% sync-% install-%: type = $(word 2, $(call resolve-remote,$*))
 ckanext-% check-% sync-% install-%: remote = $(firstword $(call resolve-remote,$*))
-ckanext-% check-% sync-% install-%: target = $(lastword $(call resolve-remote,$*))
+ckanext-% check-% sync-% install-%: target = $(word 3, $(call resolve-remote,$*))
+install-%: package_extras = $(call resolve-package-extras,$*)
 archive: $(ext_list:%=%.tar)
 
+install-ckan:
+	$(error Use 'ckan-install' rule if you need to install CKAN core)
 
 ckanext-%:
 	@echo [Clone $* into $(ext_path)]
@@ -201,7 +210,7 @@ self-install:
 
 install-%: ckanext-%
 	cd $(ext_path); \
-	$(call self-install) \
+	$(call self-install,$(package_extras)) \
 	$(call deps-install) \
 	$(call dev-install)
 
