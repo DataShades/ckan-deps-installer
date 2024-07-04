@@ -81,7 +81,7 @@ define ckan-maintained-remote
 https://github.com/ckan/ckanext-$(1).git branch master
 endef
 
-help:
+info:
 	@echo CKAN dependencies installer
 	@echo
 	@echo Usage:
