@@ -3,7 +3,7 @@ _version ?= $(_installer_version)
 
 develop =
 local =
-pyright_compatible =
+pyright_compatible = 1
 
 root_dir = ..
 index ?= pypi
@@ -18,7 +18,7 @@ vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
 
 define pip-file
-pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(use_2020_resolver),--use-feature=2020-resolver);
+$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(use_2020_resolver),--use-feature=2020-resolver);
 endef
 
 define self-install
@@ -125,7 +125,6 @@ info:
 	@echo -e '\tinstall*:'
 	@echo -e '\t\tdevelop=1 - install dev-requirements if present'
 	@echo -e '\t\tlocal=1   - use local packages instead of PyPI(you need to build it first via `make local-index`)'
-	@echo -e '\t\tpyright_compatible=1 - make sure pyright can find installed packages during typechecking'
 	@echo
 	@echo -e '\tinstall*, local-index:'
 	@echo -e "\t\tindex=pypi - path to local package index(relative to $$(realpath $(root_dir))). By default: $(index)"
