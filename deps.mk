@@ -1,4 +1,4 @@
-_installer_version = v0.0.31
+_installer_version = v0.0.32
 _version ?= $(_installer_version)
 
 develop =
