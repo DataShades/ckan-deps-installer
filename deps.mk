@@ -10,19 +10,17 @@ index ?= pypi
 
 alternative ?= remote
 remote-ckan ?= https://github.com/ckan/ckan.git tag $(ckan_tag)
-py2 =
 upgrade_requirements ?= 1
-use_2020_resolver =
 
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
 
 define pip-file
-$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(use_2020_resolver),--use-feature=2020-resolver);
+$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)");
 endef
 
 define self-install
-$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install -e'.$(if $(1),[$(1)])' $(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(use_2020_resolver),--use-feature=2020-resolver);
+$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install -e'.$(if $(1),[$(1)])' $(if $(local), --no-index -f "$(root_dir)/$(index)");
 endef
 
 define resolve-package-extras
@@ -31,7 +29,6 @@ endef
 
 define deps-install
 for f in requirements.txt pip-requirements.txt; do \
-	if [ -n "$(py2)" ]; then altf=$$(basename $$f .txt)-py2.txt; if [ -f "$$altf" ]; then f="$$altf"; fi; fi; \
 	if [ -f "$$f" ]; then $(call pip-file,$$f,$(upgrade_requirements)) fi; \
 done;
 endef
@@ -67,9 +64,9 @@ $(call checkout-$(2),$(1))
 endef
 
 define download-packages
-pip download . -d "$(root_dir)/$(index)" $(if $(use_2020_resolver),--use-feature=2020-resolver); \
+pip download . -d "$(root_dir)/$(index)"; \
 for f in requirements.txt pip-requirements.txt dev-requirements.txt; do \
-	if [ -f "$$f" ]; then pip download -r "$$f" -d "$(root_dir)/$(index)" $(if $(use_2020_resolver),--use-feature=2020-resolver); fi; \
+	if [ -f "$$f" ]; then pip download -r "$$f" -d "$(root_dir)/$(index)"; fi; \
 done;
 endef
 
@@ -265,7 +262,7 @@ full-upgrade: ckan-sync sync ckan-install install self-install
 local-index:
 	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
-	pip download wheel setuptools -d "$(root_dir)/$(index)" $(if $(use_2020_resolver),--use-feature=2020-resolver); \
+	pip download wheel setuptools -d "$(root_dir)/$(index)"; \
 	$(call download-packages)
 	$(call download-packages)
 
