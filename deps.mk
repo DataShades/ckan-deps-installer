@@ -1,4 +1,4 @@
-_installer_version = v0.0.32
+_installer_version = v0.0.33
 _version ?= $(_installer_version)
 
 develop =
@@ -197,7 +197,6 @@ ckan-sync: ckan
 ckan-install:
 	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
-	$(call pip-file,requirement-setuptools.txt) \
 	$(call self-install) \
 	$(call deps-install) \
 	$(call dev-install)
@@ -266,7 +265,7 @@ full-upgrade: ckan-sync sync ckan-install install self-install
 local-index:
 	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
-	pip download wheel -r "requirement-setuptools.txt" -d "$(root_dir)/$(index)" $(if $(use_2020_resolver),--use-feature=2020-resolver); \
+	pip download wheel setuptools -d "$(root_dir)/$(index)" $(if $(use_2020_resolver),--use-feature=2020-resolver); \
 	$(call download-packages)
 	$(call download-packages)
 
