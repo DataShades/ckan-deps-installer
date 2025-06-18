@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.0.34](https://github.com/DataShades/ckan-deps-installer/releases/tag/v0.0.34) - 2025-06-18
+
+<small>[Compare with v0.0.33](https://github.com/DataShades/ckan-deps-installer/compare/v0.0.33...v0.0.34)</small>
+
+### Features
+
+- add constraints variable for tuning requirements ([800bb01](https://github.com/DataShades/ckan-deps-installer/commit/800bb018f35d71740b2976876d10e83935a1dbfb) by Sergey Motornyuk).
+
+## [v0.0.33](https://github.com/DataShades/ckan-deps-installer/releases/tag/v0.0.33) - 2024-08-15
+
+<small>[Compare with v0.0.32](https://github.com/DataShades/ckan-deps-installer/compare/v0.0.32...v0.0.33)</small>
+
+### Features
+
+- remove py2 and 2020-resolver flags ([32db5e2](https://github.com/DataShades/ckan-deps-installer/commit/32db5e2f9e3bd0079b4a48766c9faf37af72e6cc) by Sergey Motornyuk).
+
+### Bug Fixes
+
+- do not install requirement-setuptools.txt ([e9ba71c](https://github.com/DataShades/ckan-deps-installer/commit/e9ba71cc0bc2d88dfcd1f4780a9494290189cddd) by Sergey Motornyuk).
+
+## [v0.0.32](https://github.com/DataShades/ckan-deps-installer/releases/tag/v0.0.32) - 2024-07-08
+
+<small>[Compare with v0.0.31](https://github.com/DataShades/ckan-deps-installer/compare/v0.0.31...v0.0.32)</small>
+
+### Features
+
+- pyright compatible installations ([8662f4b](https://github.com/DataShades/ckan-deps-installer/commit/8662f4bc8c62e9a0e2e812922f55c2dbbd10b0de) by Sergey Motornyuk).
+
 ## [v0.0.31](https://github.com/DataShades/ckan-deps-installer/releases/tag/v0.0.31) - 2024-02-05
 
 <small>[Compare with v0.0.30](https://github.com/DataShades/ckan-deps-installer/compare/v0.0.30...v0.0.31)</small>
