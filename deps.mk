@@ -1,4 +1,4 @@
-_installer_version = v0.0.33
+_installer_version = v0.0.34
 _version ?= $(_installer_version)
 
 develop =
@@ -12,15 +12,17 @@ alternative ?= remote
 remote-ckan ?= https://github.com/ckan/ckan.git tag $(ckan_tag)
 upgrade_requirements ?= 1
 
+constraints =
+
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
 
 define pip-file
-$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)");
+$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(constraints),-c $(constraints));
 endef
 
 define self-install
-$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install -e'.$(if $(1),[$(1)])' $(if $(local), --no-index -f "$(root_dir)/$(index)");
+$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install -e'.$(if $(1),[$(1)])' $(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(constraints),-c $(constraints));
 endef
 
 define resolve-package-extras
@@ -263,7 +265,6 @@ local-index:
 	$(call ensure-ckan)
 	cd $(root_dir)/ckan; \
 	pip download wheel setuptools -d "$(root_dir)/$(index)"; \
-	$(call download-packages)
 	$(call download-packages)
 
 local-index-%:
