@@ -18,11 +18,11 @@ vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
 
 define pip-file
-$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(constraints),-c $(constraints));
+$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install $(if $(2),-U )-r "$(1)"$(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(constraints),-c $(constraints)) || exit 1;
 endef
 
 define self-install
-$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install -e'.$(if $(1),[$(1)])' $(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(constraints),-c $(constraints));
+$(if $(pyright_compatible),SETUPTOOLS_ENABLE_FEATURES="legacy-editable" )pip install -e'.$(if $(1),[$(1)])' $(if $(local), --no-index -f "$(root_dir)/$(index)") $(if $(constraints),-c $(constraints)) || exit 1;
 endef
 
 define resolve-package-extras
