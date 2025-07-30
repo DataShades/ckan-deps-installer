@@ -183,7 +183,7 @@ ckan ckan-sync ckan-check: target = $(lastword $(call resolve-remote,ckan))
 ckan:
 	@echo [Clone ckan into $(ckan_path)]
 	@echo "Running: git clone $(shell echo '$(remote)' | sed 's|://[^@]*@|://*****:*****@|') $(ext_path)"
-	@git clone $(remote) $(ext_path);
+	@git clone $(remote) $(ckan_path);
 
 ckan-sync: ckan
 	$(call ensure-ckan)
