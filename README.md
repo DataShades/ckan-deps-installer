@@ -129,6 +129,7 @@ package_extras-dev-scheming = test
 | self-install  | install current extension and its requirements                                                                         |
 | full-upgrade  | synchronize and install everything(it is just a combination of `sync ckan-sync install ckan-install self-install`)     |
 | local-index   | download all the requirements. This allows you to install the project with `local=1` flag even without internet access |
+| download      | download requirements sources at the defined references without git history |
 
 In addition, some commands can behave differently when additional flags(`x=y`)
 added to the command. For example, `install` command can install
