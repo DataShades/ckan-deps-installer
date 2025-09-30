@@ -65,6 +65,36 @@ define checkout-target
 $(call checkout-$(2),$(1))
 endef
 
+define download-branch-or-tag
+$(eval remote := $(1))
+$(eval target := $(2))
+$(eval ext_path := $(3))
+@echo "Running: git clone $(shell echo '$(remote)' | sed 's|://[^@]*@|://*****:*****@|') --depth 1 $(ext_path)"
+@git clone $(remote) --branch $(target) --depth 1 $(ext_path) && rm -rf $(ext_path)/$*/.git;
+endef
+
+define download-branch
+$(call download-branch-or-tag,$(1),$(2),$(3))
+endef
+
+define download-tag
+$(call download-branch-or-tag,$(1),$(2),$(3))
+endef
+
+define download-commit
+$(eval remote := $(1))
+$(eval target := $(2))
+$(eval ext_path := $(3))
+git clone --filter=blob:none --no-checkout $(remote) $(ext_path); \
+cd $(ext_path); \
+git checkout $(target)
+endef
+
+define download-target
+$(call download-$(2),$(1),$(3),$(4))
+endef
+
+
 define download-packages
 pip download . -d "$(root_dir)/$(index)"; \
 for f in requirements.txt pip-requirements.txt dev-requirements.txt; do \
@@ -113,6 +143,8 @@ info:
 	@echo
 	@echo -e '\tself-install - install current extension and its requirements'
 	@echo
+	@echo -e '\tdownload - download extension source without git history'
+	@echo
 	@echo -e '\tfull-upgrade - synchronize and install everything(it is just a combination of `sync ckan-sync install ckan-install self-install`)'
 	@echo
 	@echo -e '\tlocal-index - download all the requirements. This allows you to install the project with `local=1` flag even without internet access'
@@ -147,11 +179,11 @@ list:
 
 .SECONDEXPANSION:
 
-install ckanext sync check local-index: $(ext_list:%=$$@-%)
-ckanext-% check-% sync-% install-% local-index-% %.tar: ext_path=$(root_dir)/ckanext-$*
-ckanext-% check-% sync-% install-%: type = $(word 2, $(call resolve-remote,$*))
-ckanext-% check-% sync-% install-%: remote = $(firstword $(call resolve-remote,$*))
-ckanext-% check-% sync-% install-%: target = $(word 3, $(call resolve-remote,$*))
+install ckanext sync check local-index download: $(ext_list:%=$$@-%)
+ckanext-% check-% sync-% install-% local-index-% download-% %.tar: ext_path=$(root_dir)/ckanext-$*
+ckanext-% check-% sync-% install-% download-%: type = $(word 2, $(call resolve-remote,$*))
+ckanext-% check-% sync-% install-% download-%: remote = $(firstword $(call resolve-remote,$*))
+ckanext-% check-% sync-% install-% download-%: target = $(word 3, $(call resolve-remote,$*))
 install-%: package_extras = $(call resolve-package-extras,$*)
 archive: $(ext_list:%=%.tar)
 
@@ -174,6 +206,14 @@ sync-%: ckanext-%
 	git reset --hard; \
 	$(call checkout-target,$(target),$(type)) \
 	git clean -df;
+
+
+download-%:
+	@echo [Download $* into $(ext_path) - $(type) $(target)]
+	@echo "Removing existing $* folder"
+	rm -rf $(ext_path); \
+	$(call download-target,$(target),$(type),$(remote),$(ext_path))
+
 
 ckan: ckan_path=$(root_dir)/ckan
 
