@@ -14,6 +14,7 @@ upgrade_requirements ?= 1
 
 constraints =
 CDM_USE_UV ?=
+with_submodules =
 
 vpath ckanext-% $(root_dir)
 vpath ckan $(root_dir)
@@ -194,7 +195,7 @@ install-ckan:
 ckanext-%:
 	@echo [Clone $* into $(ext_path)]
 	@echo "Running: git clone $(shell echo '$(remote)' | sed 's|://[^@]*@|://*****:*****@|') $(ext_path)"
-	@git clone $(remote) $(ext_path);
+	@git clone $(if $(with_submodules),--recurse-submodules )$(remote) $(ext_path);
 	cd $(ext_path); \
 	$(call checkout-target,$(target),$(type))
 
