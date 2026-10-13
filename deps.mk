@@ -217,15 +217,21 @@ download-%:
 	$(call download-target,$(target),$(type),$(remote),$(ext_path))
 
 
-ckan: ckan_path=$(root_dir)/ckan
+ckan ckan-download: ckan_path=$(root_dir)/ckan
 
-ckan ckan-sync: type = $(word 2, $(call resolve-remote,ckan))
-ckan ckan-sync: remote = $(firstword $(call resolve-remote,ckan))
-ckan ckan-sync ckan-check: target = $(lastword $(call resolve-remote,ckan))
+ckan ckan-sync ckan-download: type = $(word 2, $(call resolve-remote,ckan))
+ckan ckan-sync ckan-download: remote = $(firstword $(call resolve-remote,ckan))
+ckan ckan-sync ckan-check ckan-download: target = $(lastword $(call resolve-remote,ckan))
 ckan:
 	@echo [Clone ckan into $(ckan_path)]
 	@echo "Running: git clone $(shell echo '$(remote)' | sed 's|://[^@]*@|://*****:*****@|') $(ext_path)"
 	@git clone $(remote) $(ckan_path);
+
+ckan-download:
+	@echo [Download CKAN into $(ckan_path) - $(type) $(target)]
+	@echo "Removing existing $* folder"
+	rm -rf $(ckan_path); \
+	$(call download-target,$(target),$(type),$(remote),$(ckan_path))
 
 ckan-sync: ckan
 	$(call ensure-ckan)
