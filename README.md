@@ -126,6 +126,9 @@ package_extras-dev-scheming = test
 | ckan-outdated | check whether newer CKAN tag is available                                                                              |
 | outdated-ALIAS | check whether newer tag/commit of the extension is available in the remote repository                                 |
 | outdated      | perform outdated-ALIAS for every single dependency and do `ckan-outdated`                                              |
+| ckan-outdated | check whether newer CKAN tag is available                                                                              |
+| outdated-ALIAS | check whether newer tag/commit of the extension is available in the remote repository                                 |
+| outdated      | perform outdated-ALIAS for every single dependency and do `ckan-outdated`                                              |
 | ckan          | clone CKAN repository                                                                                                  |
 | ckan-sync     | set CKAN to the expected tag                                                                                           |
 | ckan-install  | install CKAN with its requirements                                                                                     |

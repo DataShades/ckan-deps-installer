@@ -1,10 +1,10 @@
 ###############################################################################
 #                             requirements: start                             #
 ###############################################################################
-ckan_tag = ckan-2.10.0
+ckan_tag = ckan-2.12.0
 ext_list = spatial
 
-remote-spatial = https://github.com/ckan/ckanext-spatial.git tag v1.1.0
+remote-spatial = https://github.com/ckan/ckanext-spatial.git tag v2.3.2
 
 ###############################################################################
 #                              requirements: end                              #
