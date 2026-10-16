@@ -96,7 +96,6 @@ define download-target
 $(call download-$(2),$(1),$(3),$(4))
 endef
 
-
 define download-packages
 pip download . -d "$(root_dir)/$(index)"; \
 for f in requirements.txt pip-requirements.txt dev-requirements.txt; do \
@@ -138,6 +137,10 @@ info:
 	@echo -e '\tckan-check - verify CKAN version'
 	@echo -e '\tcheck-NAME - check whether the extension is in required state'
 	@echo -e '\tcheck - perform check-NAME for every single dependency and do `ckan-check`'
+	@echo
+	@echo -e '\tckan-outdated - check whether newer CKAN tag is available'
+	@echo -e '\toutdated-NAME - check whether newer tag/commit of the extension is available'
+	@echo -e '\toutdated - perform outdated-NAME for every single dependency and do `ckan-outdated`'
 	@echo
 	@echo -e '\tckan - clone CKAN repository'
 	@echo -e '\tckan-sync - set CKAN to the expected tag'
@@ -341,3 +344,128 @@ archive:
 
 	gzip < "$(root_dir)/src.tar" > "$(root_dir)/src.tar.gz"
 	rm -f "$(root_dir)/src.tar"
+
+###############################################################################
+#                                  outdated                                   #
+###############################################################################
+# `make outdated`: report dependencies that have newer tags/commits upstream.
+
+outdated_jobs ?= 8
+
+define outdated-target
+row() { printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$$@"; }; \
+case "$(3)" in \
+	branch) \
+		if [ ! -d "$(5)/.git" ]; then \
+			row error "$(1)" branch "$(4)" - error; \
+			exit 0; \
+		fi; \
+		cd "$(5)"; \
+		if ! git fetch -q origin "$(4)" 2>/dev/null; then \
+			row error "$(1)" branch "$(4)" - error; \
+			exit 0; \
+		fi; \
+		behind=$$(git rev-list --count HEAD..FETCH_HEAD); \
+		latest=$$(git rev-parse --short=8 FETCH_HEAD); \
+		status=outdated; \
+		if [ "$$behind" = "0" ]; then status=ok; fi; \
+		row $$status "$(1)" branch "$(4)" "$$latest" "$$behind commits"; \
+		;; \
+	commit) \
+		if ! head=$$(git ls-remote "$(2)" HEAD 2>/dev/null | cut -f1) || [ -z "$$head" ]; then \
+			row error "$(1)" commit "$(4)" - error; \
+			exit 0; \
+		fi; \
+		latest=$$(echo $$head | cut -c1-8); \
+		case "$$head" in \
+			"$(4)"*) \
+				row ok "$(1)" commit "$(4)" "$$latest" "0 commits"; \
+				exit 0; \
+				;; \
+		esac; \
+		if [ ! -d "$(5)/.git" ]; then \
+			row outdated "$(1)" commit "$(4)" "$$latest" "?"; \
+			exit 0; \
+		fi; \
+		cd "$(5)"; \
+		if ! git fetch -q origin HEAD 2>/dev/null \
+			|| ! behind=$$(git rev-list --count "$(4)..FETCH_HEAD" 2>/dev/null); then \
+			row outdated "$(1)" commit "$(4)" "$$latest" "?"; \
+			exit 0; \
+		fi; \
+		row outdated "$(1)" commit "$(4)" "$$latest" "$$behind commits"; \
+		;; \
+	tag) \
+		if ! refs=$$(git ls-remote --tags --refs "$(2)" 2>/dev/null); then \
+			row error "$(1)" tag "$(4)" - error; \
+			exit 0; \
+		fi; \
+		target_ref="$(4)"; \
+		prefix=$$(printf '%s' "$$target_ref" | sed -E 's/[0-9].*$$//'); \
+		tags=$$(printf '%s\n' "$$refs" | sed 's|.*refs/tags/||' \
+			| awk -v p="$$prefix" 'index($$0, p) == 1 && substr($$0, length(p) + 1) ~ /^[0-9]+(\.[0-9]+)*$$/' \
+			| sort -V); \
+		latest=$$(printf '%s\n' "$$tags" | tail -n1); \
+		if [ -z "$$latest" ]; then \
+			row error "$(1)" tag "$(4)" - error; \
+			exit 0; \
+		fi; \
+		newer=$$(printf '%s\n' "$$tags" "$(4)" | sort -Vu \
+			| awk -v t="$(4)" 'found { n++ } $$0 == t { found = 1 } END { print n + 0 }'); \
+		status=outdated; \
+		if [ "$$newer" = "0" ]; then status=ok; latest="$(4)"; fi; \
+		row $$status "$(1)" tag "$(4)" "$$latest" "$$newer releases"; \
+		;; \
+	*) \
+		row error "$(1)" "$(3)" "$(4)" - error; \
+		;; \
+esac;
+endef
+
+define outdated-table
+color=""; \
+if [ -t 1 ] && [ -z "$$NO_COLOR" ]; then color=1; fi; \
+{ \
+	printf 'header\tName\tType\tPinned\tLatest\tBehind\n'; \
+	$(MAKE) -s -j$(outdated_jobs) --no-print-directory -f $(firstword $(MAKEFILE_LIST)) $(1); \
+} | awk -F '\t' -v color="$$color" -v order="$(patsubst _outdated-%,%,$(patsubst _ckan-outdated,ckan,$(1)))" ' \
+	function render(r,    line, i) { \
+		line = ""; \
+		for (i = 2; i <= 6; i++) line = line sprintf("%-" width[i] "s  ", cell[r, i]); \
+		sub(/ +$$/, "", line); \
+		if (color) line = "\033[" code[status[r]] "m" line "\033[0m"; \
+		print line; \
+	} \
+	{ status[NR] = $$1; row[$$2] = NR; for (i = 2; i <= NF; i++) { cell[NR, i] = $$i; if (length($$i) > width[i]) width[i] = length($$i) } } \
+	END { \
+		code["ok"] = "32"; code["outdated"] = "31"; code["error"] = "33"; code["header"] = "1"; \
+		render(1); \
+		n = split(order, names, " "); \
+		for (k = 1; k <= n; k++) { rank[names[k]] = k; if (names[k] in row) render(row[names[k]]); } \
+		for (r = 2; r <= NR; r++) if (!(cell[r, 2] in rank)) render(r); \
+	}'
+endef
+
+_outdated-%: ext_path = $(root_dir)/ckanext-$*
+_outdated-%: type = $(word 2, $(call resolve-remote,$*))
+_outdated-%: remote = $(firstword $(call resolve-remote,$*))
+_outdated-%: target = $(word 3, $(call resolve-remote,$*))
+
+_ckan-outdated: type = $(word 2, $(call resolve-remote,ckan))
+_ckan-outdated: remote = $(firstword $(call resolve-remote,ckan))
+_ckan-outdated: target = $(lastword $(call resolve-remote,ckan))
+
+outdated:
+	@$(call outdated-table,_ckan-outdated $(ext_list:%=_outdated-%))
+
+outdated-%:
+	@$(call outdated-table,_outdated-$*)
+
+ckan-outdated:
+	@$(call outdated-table,_ckan-outdated)
+
+_outdated-%:
+	@$(call outdated-target,$*,$(remote),$(type),$(target),$(ext_path))
+
+_ckan-outdated:
+	@$(call outdated-target,ckan,$(remote),$(type),$(target),$(root_dir)/ckan)
