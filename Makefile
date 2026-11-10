@@ -2,10 +2,11 @@
 #                             requirements: start                             #
 ###############################################################################
 ckan_tag = ckan-2.12.0
-ext_list = spatial
 
-remote-spatial = https://github.com/ckan/ckanext-spatial.git tag v2.3.2
+ext_list = files file-keeper-cloud 
 
+remote-file-keeper-cloud = https://github.com/ckan/ckanext-file-keeper-cloud commit 50954e8 # 2026-05-14
+remote-files = https://github.com/DataShades/ckanext-files tag v1.3.2
 ###############################################################################
 #                              requirements: end                              #
 ###############################################################################
@@ -14,11 +15,5 @@ _version = master
 
 -include deps.mk
 
-prepare:  ## download function definitions
+prepare:
 	curl -O https://raw.githubusercontent.com/DataShades/ckan-deps-installer/$(_version)/deps.mk
-
-ihelp:  ## show internal documentation
-	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
-
-changelog:  ## compile changelog
-	git changelog -o CHANGELOG.md -c conventional
